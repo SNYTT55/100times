@@ -6,90 +6,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>100次挑戰紀錄</title>
     <style>
-        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; }
-        body { background: var(--bg); color: #333; font-family: "PingFang TC", sans-serif; margin: 0; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --soft-blue: #0074D9; }
+        body { background: var(--bg); color: #333; font-family: "PingFang TC", sans-serif; margin: 0; padding-top: 50px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
-        .header { background: #000; padding: 15px; color: white; text-align: center; border-bottom: 3px solid var(--p-red); position: sticky; top: 0; z-index: 100; }
-        .tab-content { display: none; padding: 20px; max-width: 450px; margin: 0 auto; }
-        .tab-content.active { display: block; }
+        /* 置頂導覽列 */
+        .header { background: var(--black); color: white; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 3px solid var(--p-red); }
+        .nav-top { display: flex; height: 50px; }
+        .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; }
+        .nav-item.active { color: var(--p-yellow); background: rgba(255,255,255,0.1); }
 
-        .game-card { background: white; border: 2px solid #000; padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; }
+        .tab-content { display: none; padding: 20px; width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
+        .tab-content.active { display: flex; flex-direction: column; min-height: calc(100vh - 50px); }
+
+        /* 任務卡片 */
+        .game-card, .bonus-card { background: white; border: 2px solid var(--black); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; }
         .game-card.done { border-color: #ccc; color: #bbb; opacity: 0.6; }
-        .check-box { width: 28px; height: 28px; border: 2px solid #000; margin-right: 12px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .check-box { width: 28px; height: 28px; border: 2px solid var(--black); margin-right: 12px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
         .game-card.done .check-box::after { content: '✔'; color: var(--p-red); font-size: 24px; font-weight: bold; }
 
-        .bonus-card { background: white; border: 2px solid #000; padding: 18px; margin-top: 25px; display: flex; align-items: center; cursor: pointer; }
-        .bonus-card.collected { background: var(--p-yellow); color: #000; border-color: #000; box-shadow: 4px 4px 0 #000; font-weight: bold; }
+        /* 特殊成就 */
+        .bonus-card { background: transparent; border: 1px solid #ddd; color: #bbb; margin-top: 20px; }
+        .bonus-card.collected { background: var(--p-yellow); border: 2px solid var(--black); color: var(--black); box-shadow: 4px 4px 0 var(--black); font-weight: bold; }
+        .bonus-star { margin-right: 12px; font-size: 18px; color: #ddd; }
+        .bonus-card.collected .bonus-star { color: var(--p-red); }
 
-        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; background: white; padding: 12px; border: 2px solid #000; margin-top: 15px; }
-        .cell { aspect-ratio: 1; border: 1px solid #eee; background: #f9f9f9; font-size: 8px; display: flex; align-items: center; justify-content: center; color: #ccc; }
-        .cell.filled { background: var(--p-red); color: white; border-color: #000; }
-        .cell.gold-filled { background: var(--p-yellow); color: black; border-color: #000; font-weight: bold; }
+        /* 地圖區域 */
+        .map-wrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; background: white; padding: 20px; border: 3px solid var(--black); width: 100%; box-sizing: border-box; }
+        .cell { aspect-ratio: 1/1; border: 1px solid #eee; background: #f9f9f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #ddd; font-family: "Impact", sans-serif; }
+        .cell.filled { background: var(--p-red); color: white; border-color: var(--black); }
+        .cell.gold-filled { background: var(--p-yellow); color: var(--black); border-color: var(--black); font-weight: bold; }
 
-        #final-reveal-btn { 
-            display: none; width: auto; padding: 12px 24px; background: #000; color: #fff; 
-            border: none; font-size: 14px; font-weight: bold; margin: 20px auto;
-            cursor: pointer; text-align: center; letter-spacing: 2px; box-shadow: 4px 4px 0 var(--p-red);
-        }
+        #final-reveal-btn { display: none; width: 100%; padding: 16px; background: var(--black); color: #fff; border: none; font-size: 16px; font-weight: bold; margin-bottom: 20px; cursor: pointer; letter-spacing: 2px; box-shadow: 4px 4px 0 var(--p-red); }
 
-        /* 🏆 證書樣式 */
-        #cert-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center;
-            padding: 20px; box-sizing: border-box;
-        }
-        #cert-box {
-            width: 100%; max-width: 350px; max-height: 85vh;
-            background: #FAF5F0; color: #000; padding: 45px 30px; text-align: left; position: relative;
-            overflow-y: auto; transform: translateY(20px); opacity: 0; transition: 0.5s ease;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
-        }
+        /* 🏆 證書色彩強化版 */
+        #cert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        #cert-box { width: 100%; max-width: 350px; max-height: 85vh; background: #FAF5F0; color: #000; padding: 45px 30px; text-align: left; position: relative; overflow-y: auto; transform: translateY(20px); opacity: 0; transition: 0.5s ease; border: 1px solid #ddd; }
         #cert-box.show { transform: translateY(0); opacity: 1; }
         #cert-box::before { content: ''; position: absolute; top: 0; left: 0; width: 50px; height: 10px; background: var(--p-red); }
         
         .c-header { font-size: 10px; letter-spacing: 4px; color: #aaa; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .c-body { font-size: 15px; line-height: 2.1; color: #333; margin-bottom: 25px; }
-        .c-body b { color: var(--p-red); font-weight: 900; }
-        .highlight { font-weight: 900; border-bottom: 2px solid var(--p-yellow); padding: 0 2px; }
 
-        .data-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid #000; }
-        .data-line { font-size: 13px; color: #666; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .final-amount-box { margin-top: 30px; text-align: right; }
+        /* 顏色標籤 */
+        .color-date { color: var(--p-red); font-weight: bold; }
+        .color-ques { color: var(--soft-blue); font-style: italic; }
+        .color-stat { color: #000; background: var(--p-yellow); padding: 0 4px; font-weight: 900; }
+        .color-gift { color: var(--p-red); font-weight: 900; text-decoration: underline; }
+
         .final-amount-val { font-size: 32px; font-weight: 900; color: var(--p-red); font-family: "Impact", sans-serif; }
-
-        .nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; height: 70px; border-top: 3px solid var(--p-red); }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 12px; }
-        .nav-item.active { color: var(--p-yellow); font-weight: bold; }
-        #test-btn { position: fixed; bottom: 85px; right: 15px; font-size: 10px; color: #ddd; background: none; border: none; opacity: 0.5; }
+        #test-btn { position: fixed; bottom: 15px; right: 15px; font-size: 10px; color: #ddd; background: none; border: none; opacity: 0.3; }
     </style>
 </head>
 <body onload="initGame()">
 
-    <button id="test-btn" onclick="runTest()">[DEBUG]</button>
-
-    <div class="header"><div style="font-size: 14px; font-weight: 900; letter-spacing: 1px;">100次挑戰紀錄</div></div>
+    <header class="header">
+        <nav class="nav-top">
+            <div class="nav-item active" onclick="switchTab('play', this)">任務</div>
+            <div class="nav-item" onclick="switchTab('map', this)">紀錄</div>
+        </nav>
+    </header>
 
     <div id="tab-play" class="tab-content active">
         <div id="task-meal" class="game-card" onclick="processTask('task-meal', 10, true)"><div class="check-box"></div><div><b>飽足的一餐</b><br><small>原型食物</small></div></div>
         <div id="task-drink" class="game-card" onclick="processTask('task-drink', 10, true)"><div class="check-box"></div><div><b>純粹的飲用</b><br><small>無糖飲品</small></div></div>
-        <div id="task-bonus" class="bonus-card" onclick="processBonus('task-bonus', 20)"><div style="width:25px; font-weight:bold; color:var(--p-yellow); text-align:center; margin-right:10px; font-size:20px;">★</div><div><b>特殊成就</b><br><small>身體動動</small></div></div>
-        <p id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:20px;">今日任務尚未完成</p>
+        <div id="task-bonus" class="bonus-card" onclick="processBonus('task-bonus', 20)"><span class="bonus-star">★</span><div><b>特殊成就</b><br><small>身體動動</small></div></div>
+        <p id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:25px; flex-grow: 1;">今日任務尚未完成</p>
     </div>
 
     <div id="tab-map" class="tab-content">
         <button id="final-reveal-btn" onclick="openCertificate()">查看結業證明</button>
-        <div class="grid" id="map-grid"></div>
-        <p style="text-align:center; font-size:10px; color:#888; margin-top:15px;">已累積 <span id="display-count">0</span> / 100 次冒險</p>
+        <div class="map-wrapper"><div class="grid" id="map-grid"></div></div>
+        <p style="text-align:center; font-size:12px; color:#888; margin-top:30px; font-weight:bold;">已累積 <span id="display-count" style="color:var(--p-red); font-size:20px;">0</span> / 100 次冒險</p>
     </div>
 
     <div id="cert-overlay">
         <div id="cert-box">
             <div class="c-header">OFFICIAL RECORD / 2026</div>
-            <div class="c-body" id="dynamic-text"></div>
-            <div class="data-section">
-                <div class="data-line"><span>基礎積分獎金</span><span>NT$ <span id="res-base">0</span></span></div>
-                <div class="data-line"><span>提速達成獎勵</span><span>NT$ <span id="res-bonus">0</span></span></div>
-                <div class="final-amount-box">
+            <div id="dynamic-text" class="c-body"></div>
+            <div style="margin-top:30px; padding-top:20px; border-top:1px solid #000;">
+                <div style="font-size:13px; color:#666; margin-bottom:8px; display:flex; justify-content:space-between;"><span>基礎積分獎金</span><span>NT$ <span id="res-base">0</span></span></div>
+                <div style="font-size:13px; color:#666; margin-bottom:8px; display:flex; justify-content:space-between;"><span>提速達成獎勵</span><span>NT$ <span id="res-bonus">0</span></span></div>
+                <div style="margin-top:30px; text-align:right;">
                     <div style="font-size:10px; color:#888;">應得總額</div>
                     <div class="final-amount-val">NT$ <span id="res-total">0</span></div>
                 </div>
@@ -98,14 +96,10 @@
         </div>
     </div>
 
-    <div class="nav">
-        <div class="nav-item active" onclick="switchTab('play', this)">任務</div>
-        <div class="nav-item" onclick="switchTab('map', this)">紀錄</div>
-    </div>
+    <button id="test-btn" onclick="runTest()">[DEBUG]</button>
 
     <script>
-        let totalExp = 0, baseCount = 0, bonusCount = 0;
-        let todayMarked = false, hasBonusToday = false;
+        let totalExp = 0, baseCount = 0, bonusCount = 0, todayMarked = false, hasBonusToday = false;
         const startDate = new Date('2026-03-31'), deadline = new Date('2026-07-31');
 
         function initGrid() {
@@ -159,9 +153,7 @@
 
         function checkHundred() { if(baseCount === 100) document.getElementById('final-reveal-btn').style.display = 'block'; }
 
-        // 💾 存檔與讀取
         function saveData() {
-            const history = JSON.parse(localStorage.getItem('c100_history') || "[]");
             const state = {
                 totalExp, baseCount, bonusCount, todayMarked, hasBonusToday,
                 lastDate: new Date().toDateString(),
@@ -176,15 +168,9 @@
             if(saved) {
                 const data = JSON.parse(saved);
                 const isNewDay = data.lastDate !== new Date().toDateString();
-                
-                totalExp = data.totalExp;
-                baseCount = data.baseCount;
-                bonusCount = data.bonusCount;
-                
-                // 跨日檢查：如果是新的一天，重置當日狀態
+                totalExp = data.totalExp; baseCount = data.baseCount; bonusCount = data.bonusCount;
                 todayMarked = isNewDay ? false : data.todayMarked;
                 hasBonusToday = isNewDay ? false : data.hasBonusToday;
-                
                 if(!isNewDay) {
                     if(todayMarked) {
                         document.getElementById('task-meal').classList.add('done');
@@ -193,7 +179,6 @@
                     }
                     if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
                 }
-
                 data.cellClasses.forEach((cls, i) => {
                     const cell = document.getElementById('c' + (i+1));
                     if(cell) cell.className = cls;
@@ -203,6 +188,7 @@
             }
         }
 
+        // ✨ 證書文字顏色邏輯
         function openCertificate() {
             const now = new Date();
             const mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
@@ -213,15 +199,15 @@
 
             document.getElementById('dynamic-text').innerHTML = `
                 終於走到這裡了！<br>
-                從 03/31 – <span class="highlight">${mm}/${dd}</span><br>
-                在這 <span class="highlight">${diffDays}</span> 天裡，終於完成了 100 次挑戰！<br><br>
+                從 03/31 – <span class="color-date">${mm}/${dd}</span><br>
+                在這 <span class="color-date">${diffDays}</span> 天裡，終於完成了 100 次挑戰！<br><br>
                 克服了<b>無糖鮮奶茶</b>真的很不容易啊！<br>
-                會想念有糖鮮奶茶的味道嗎？<br>
-                這次有成功達到自己想要的樣子了嗎？<br><br>
+                <span class="color-ques">會想念有糖鮮奶茶的味道嗎？</span><br>
+                <span class="color-ques">這次有成功達到自己想要的樣子了嗎？</span><br><br>
                 但不管如何，妳堅持到了最後。<br>
-                在這段日子內，妳完成度是：<span class="highlight">${completionRate}%</span>。<br>
-                總共得到 <span class="highlight">${totalExp}</span> 積分。<br>
-                辛苦了，這是一份送給妳的禮物。
+                在這段日子內，妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>
+                總共得到 <span class="color-stat">${totalExp}</span> 積分。<br>
+                辛苦了！。
             `;
             
             document.getElementById('res-base').innerText = baseCash.toLocaleString();
@@ -231,13 +217,8 @@
             setTimeout(() => { document.getElementById('cert-box').classList.add('show'); }, 100);
         }
 
-        function resetGame() { if(confirm("確定要刪除所有進度嗎？此操作無法還原！")) { localStorage.clear(); location.reload(); } }
-        
-        function runTest() {
-            baseCount = 100; bonusCount = 100; totalExp = 4000;
-            for(let i=1; i<=100; i++) document.getElementById('c'+i).className = 'cell gold-filled';
-            checkHundred(); saveData();
-        }
+        function resetGame() { if(confirm("確定要重置進度？")) { localStorage.clear(); location.reload(); } }
+        function runTest() { baseCount = 100; bonusCount = 100; totalExp = 4000; for(let i=1; i<=100; i++) document.getElementById('c'+i).className = 'cell gold-filled'; checkHundred(); saveData(); }
     </script>
 </body>
 </html>
