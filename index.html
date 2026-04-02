@@ -62,7 +62,7 @@
         <p style="text-align:center; font-size:12px; color:#888; margin-top:30px; font-weight:bold;">已累積 <span id="display-count" style="color:var(--p-red); font-size:20px;">0</span> / 100 次冒險</p>
         
         <div onclick="exportData()" style="text-align:center; font-size:10px; color:#ccc; margin: 40px 0 20px 0; letter-spacing:1px; cursor:pointer;">
-            VER 1.2 / UPDATED: 2026-04-02 19:40 <br> (點擊備份)
+            VER 1.2 / UPDATED: 2026-04-02 19:50 <br> (點擊備份)
         </div>
     </div>
 
@@ -183,13 +183,23 @@
         }
 
         function exportData() {
-            const saved = localStorage.getItem('c100_state');
-            if(saved) {
-                const d = JSON.parse(saved);
-                const report = `=== 100次挑戰：進度存檔 ===\n總格數：${d.baseCount} / 100\n原型食物：${d.mealTotal} 次\n無糖飲品：${d.drinkTotal} 次\n額外運動：${d.bonusCount} 次\n總積分：${d.totalExp}\n=======================\n(代碼：${saved})`;
-                prompt("這是妳目前的進度報告，請複製存到 LINE：", report);
-            } else { alert("目前還沒有紀錄可以備份喔！"); }
-        }
+                    const saved = localStorage.getItem('c100_state');
+                    if(saved) {
+                        const d = JSON.parse(saved);
+                        // 這裡就是妳要的：純文字明細，不含混亂代碼
+                        const report = `=== 備份清單單 ===\n` +
+                                       `累計天數：${d.baseCount} / 100\n` +
+                                       `原型食物：${d.mealTotal} 次\n` +
+                                       `無糖飲品：${d.drinkTotal} 次\n` +
+                                       `額外運動：${d.bonusCount} 次\n` +
+                                       `-----------------------\n` +
+                                       `最後更新：${d.lastDate}\n` +
+                                       `=======================`;
+                        prompt("請複製這段文字", report);
+                    } else { 
+                        alert("目前還沒有紀錄可以備份喔！"); 
+                    }
+                }
 
         function openCertificate() {
             const now = new Date();
