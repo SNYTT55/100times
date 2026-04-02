@@ -87,6 +87,15 @@
         <button onclick="rescueData()">[救命]</button>
     </div>
 
+    <div id="backup-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
+    <div style="background:white; width:100%; max-width:400px; padding:20px; border-radius:10px; text-align:center;">
+        <h3 style="margin-top:0;">📋 進度對帳單</h3>
+        <p style="font-size:12px; color:#666;">點擊下方框框即可全選複製：</p>
+        <textarea id="backup-text" readonly onclick="this.select()" style="width:100%; height:180px; border:1px solid #ddd; padding:10px; box-sizing:border-box; font-size:14px; line-height:1.6; margin-bottom:15px;"></textarea>
+        <button onclick="document.getElementById('backup-overlay').style.display='none'" style="width:100%; padding:15px; background:var(--black); color:white; border:none; border-radius:5px; font-weight:bold; font-size:16px;">[ 關閉備份 ]</button>
+    </div>
+</div>
+
     <script>
         // 核心數據 (3/31-4/2 初始狀態)
         let totalExp = 40, baseCount = 3, mealTotal = 3, drinkTotal = 3, bonusCount = 0;
@@ -186,16 +195,12 @@
                     const saved = localStorage.getItem('c100_state');
                     if(saved) {
                         const d = JSON.parse(saved);
-                        // 這裡就是妳要的：純文字明細，不含混亂代碼
-                        const report = `=== 備份清單單 ===\n` +
-                                       `累計天數：${d.baseCount} / 100\n` +
-                                       `原型食物：${d.mealTotal} 次\n` +
-                                       `無糖飲品：${d.drinkTotal} 次\n` +
-                                       `額外運動：${d.bonusCount} 次\n` +
-                                       `-----------------------\n` +
-                                       `最後更新：${d.lastDate}\n` +
-                                       `=======================`;
-                        prompt("請複製這段文字", report);
+                        // 這裡就是妳要的純文字，我會傳給妳
+                        const report = `=== 進度備份 ===\n累計天數：${d.baseCount} / 100\n原型食物：${d.mealTotal} 次\n無糖飲品：${d.drinkTotal} 次\n額外運動：${d.bonusCount} 次\n最後更新：${d.lastDate}\n=======================`;
+                        
+                        // 讓大視窗彈出來
+                        document.getElementById('backup-text').value = report;
+                        document.getElementById('backup-overlay').style.display = 'flex';
                     } else { 
                         alert("目前還沒有紀錄可以備份喔！"); 
                     }
