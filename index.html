@@ -9,7 +9,6 @@
         :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --soft-blue: #0074D9; }
         body { background: var(--bg); color: #333; font-family: "PingFang TC", sans-serif; margin: 0; padding-top: 50px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         
-        /* 置頂導覽列 */
         .header { background: var(--black); color: white; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 3px solid var(--p-red); }
         .nav-top { display: flex; height: 50px; }
         .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; }
@@ -18,44 +17,35 @@
         .tab-content { display: none; padding: 20px; width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
         .tab-content.active { display: flex; flex-direction: column; min-height: calc(100vh - 50px); }
 
-        /* 任務卡片 */
-        .game-card, .bonus-card { background: white; border: 2px solid var(--black); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; transition: 0.2s; }
+        .game-card, .bonus-card { background: white; border: 2px solid var(--black); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; }
         .game-card.done { border-color: #ccc; color: #bbb; opacity: 0.6; }
         .check-box { width: 28px; height: 28px; border: 2px solid var(--black); margin-right: 12px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
         .game-card.done .check-box::after { content: '✔'; color: var(--p-red); font-size: 24px; font-weight: bold; }
 
-        /* 特殊成就 */
         .bonus-card { background: transparent; border: 1px solid #ddd; color: #bbb; margin-top: 20px; }
         .bonus-card.collected { background: var(--p-yellow); border: 2px solid var(--black); color: var(--black); box-shadow: 4px 4px 0 var(--black); font-weight: bold; }
         .bonus-star { margin-right: 12px; font-size: 18px; color: #ddd; }
         .bonus-card.collected .bonus-star { color: var(--p-red); }
 
-        /* 地圖區域 */
-        .map-wrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; background: white; padding: 20px; border: 3px solid var(--black); width: 100%; box-sizing: border-box; }
         .cell { aspect-ratio: 1/1; border: 1px solid #eee; background: #f9f9f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #ddd; font-family: "Impact", sans-serif; }
         .cell.filled { background: var(--p-red); color: white; border-color: var(--black); }
         .cell.gold-filled { background: var(--p-yellow); color: var(--black); border-color: var(--black); font-weight: bold; }
 
-        #final-reveal-btn { display: none; width: 100%; padding: 16px; background: var(--black); color: #fff; border: none; font-size: 16px; font-weight: bold; margin-bottom: 20px; cursor: pointer; letter-spacing: 2px; box-shadow: 4px 4px 0 var(--p-red); }
-
-        /* 🏆 證書色彩強化版 */
-        #cert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        #cert-box { width: 100%; max-width: 350px; max-height: 85vh; background: #FAF5F0; color: #000; padding: 45px 30px; text-align: left; position: relative; overflow-y: auto; transform: translateY(20px); opacity: 0; transition: 0.5s ease; border: 1px solid #ddd; }
-        #cert-box.show { transform: translateY(0); opacity: 1; }
-        #cert-box::before { content: ''; position: absolute; top: 0; left: 0; width: 50px; height: 10px; background: var(--p-red); }
+        .milestone-report { margin-bottom: 20px; padding: 20px; border: 3px solid var(--black); background: #fff; position: relative; text-align: left; }
+        .milestone-tag { position: absolute; top: -12px; left: 10px; color: #fff; padding: 2px 8px; font-size: 10px; font-weight: bold; }
+        .color-stat { color: #000; background: var(--p-yellow); padding: 0 4px; font-weight: 900; }
         
-        .c-header { font-size: 10px; letter-spacing: 4px; color: #aaa; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .c-body { font-size: 15px; line-height: 2.1; color: #333; margin-bottom: 25px; }
+        #final-reveal-btn { display: none; width: 100%; padding: 16px; background: var(--black); color: #fff; border: none; font-size: 16px; font-weight: bold; margin-bottom: 20px; cursor: pointer; box-shadow: 4px 4px 0 var(--p-red); }
 
-        /* 顏色標籤 */
+        #cert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        #cert-box { width: 100%; max-width: 350px; background: #FAF5F0; color: #000; padding: 45px 30px; text-align: left; position: relative; border: 1px solid #ddd; opacity: 0; transition: 0.5s; }
         .color-date { color: var(--p-red); font-weight: bold; }
         .color-ques { color: var(--soft-blue); font-style: italic; }
-        .color-stat { color: #000; background: var(--p-yellow); padding: 0 4px; font-weight: 900; }
-        .color-gift { color: var(--p-red); font-weight: 900; text-decoration: underline; }
-
         .final-amount-val { font-size: 32px; font-weight: 900; color: var(--p-red); font-family: "Impact", sans-serif; }
-        #test-btn { position: fixed; bottom: 15px; right: 15px; font-size: 10px; color: #ddd; background: none; border: none; opacity: 0.3; }
+
+        .debug-group { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 5px; opacity: 0.3; }
+        .debug-group button { font-size: 10px; color: #ddd; background: none; border: 1px solid #ddd; padding: 2px 5px; cursor: pointer; }
     </style>
 </head>
 <body onload="initGame()">
@@ -71,19 +61,24 @@
         <div id="task-meal" class="game-card" onclick="processTask('task-meal', 10, true)"><div class="check-box"></div><div><b>飽足的一餐</b><br><small>原型食物</small></div></div>
         <div id="task-drink" class="game-card" onclick="processTask('task-drink', 10, true)"><div class="check-box"></div><div><b>純粹的飲用</b><br><small>無糖飲品</small></div></div>
         <div id="task-bonus" class="bonus-card" onclick="processBonus('task-bonus', 20)"><span class="bonus-star">★</span><div><b>特殊成就</b><br><small>身體動動</small></div></div>
-        <p id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:25px; flex-grow: 1;">今日任務尚未完成</p>
+        <div id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:25px; flex-grow: 1;">今日任務尚未完成</div>
     </div>
 
     <div id="tab-map" class="tab-content">
+        <div id="milestone-area"></div>
         <button id="final-reveal-btn" onclick="openCertificate()">查看結業證明</button>
-        <div class="map-wrapper"><div class="grid" id="map-grid"></div></div>
+        <div class="grid" id="map-grid"></div>
         <p style="text-align:center; font-size:12px; color:#888; margin-top:30px; font-weight:bold;">已累積 <span id="display-count" style="color:var(--p-red); font-size:20px;">0</span> / 100 次冒險</p>
+        
+        <div style="text-align:center; font-size:10px; color:#ccc; margin: 40px 0 20px 0; letter-spacing:1px;">
+            VER 1.2 / UPDATED: 2026-04-02 19:15
+        </div>
     </div>
 
     <div id="cert-overlay">
         <div id="cert-box">
-            <div class="c-header">OFFICIAL RECORD / 2026</div>
-            <div id="dynamic-text" class="c-body"></div>
+            <div style="font-size:10px; letter-spacing:4px; color:#aaa; margin-bottom:25px; border-bottom:1px solid #eee; padding-bottom:10px;">OFFICIAL RECORD / 2026</div>
+            <div id="dynamic-text" style="font-size:14px; line-height:2; color:#333; margin-bottom:25px;"></div>
             <div style="margin-top:30px; padding-top:20px; border-top:1px solid #000;">
                 <div style="font-size:13px; color:#666; margin-bottom:8px; display:flex; justify-content:space-between;"><span>基礎積分獎金</span><span>NT$ <span id="res-base">0</span></span></div>
                 <div style="font-size:13px; color:#666; margin-bottom:8px; display:flex; justify-content:space-between;"><span>提速達成獎勵</span><span>NT$ <span id="res-bonus">0</span></span></div>
@@ -96,15 +91,38 @@
         </div>
     </div>
 
-    <button id="test-btn" onclick="runTest()">[DEBUG]</button>
+    <div class="debug-group">
+        <button onclick="runTest()">[DEBUG]</button>
+        <button onclick="rescueData()">[救命]</button>
+    </div>
 
     <script>
-        let totalExp = 0, baseCount = 0, bonusCount = 0, todayMarked = false, hasBonusToday = false;
+        let totalExp = 40, baseCount = 3, mealTotal = 3, drinkTotal = 3, bonusCount = 0;
+        let todayMarked = true, hasBonusToday = false;
         const startDate = new Date('2026-03-31'), deadline = new Date('2026-07-31');
 
+        function initGame() {
+            initGrid();
+            const saved = localStorage.getItem('c100_state');
+            if(saved) {
+                const data = JSON.parse(saved);
+                totalExp = data.totalExp; baseCount = data.baseCount; 
+                mealTotal = data.mealTotal || 3; drinkTotal = data.drinkTotal || 3; bonusCount = data.bonusCount || 0;
+                const isNewDay = data.lastDate !== new Date().toDateString();
+                todayMarked = isNewDay ? false : data.todayMarked;
+                hasBonusToday = isNewDay ? false : data.hasBonusToday;
+                if(!isNewDay) {
+                    if(data.mealDone) document.getElementById('task-meal').classList.add('done');
+                    if(data.drinkDone) document.getElementById('task-drink').classList.add('done');
+                    if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
+                }
+                if(data.cellClasses) data.cellClasses.forEach((cls, i) => { if(document.getElementById('c'+(i+1))) document.getElementById('c'+(i+1)).className = cls; });
+            }
+            updateUI();
+        }
+
         function initGrid() {
-            const grid = document.getElementById('map-grid');
-            grid.innerHTML = '';
+            const grid = document.getElementById('map-grid'); grid.innerHTML = '';
             for(let i=1; i<=100; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell'; cell.id = 'c'+i; cell.innerText = i;
@@ -112,11 +130,56 @@
             }
         }
 
+        function updateUI() {
+            document.getElementById('display-count').innerText = baseCount;
+            document.getElementById('day-status').innerText = todayMarked ? "今日冒險已收錄！" : "今日任務尚未完成";
+            
+            for(let i=1; i<=100; i++) {
+                const cell = document.getElementById('c' + i);
+                if(i <= baseCount) {
+                    if(!cell.classList.contains('filled') && !cell.classList.contains('gold-filled')) cell.classList.add('filled');
+                } else {
+                    cell.className = 'cell';
+                }
+            }
+
+            const mileArea = document.getElementById('milestone-area');
+            if(!mileArea) return; 
+            mileArea.innerHTML = "";
+
+            if (baseCount === 33) {
+                mileArea.innerHTML = `
+                    <div class="milestone-report">
+                        <div class="milestone-tag" style="background:var(--p-red);">MILESTONE 33</div>
+                        <p style="margin:0; font-size:15px; line-height:1.8; color:#000;">
+                            <b>實質蛻變：</b><br>
+                            在這 33 次挑戰中，妳完成了 <span class="color-stat">${mealTotal} 次</span> 原型食物、<span class="color-stat">${drinkTotal} 次</span> 無糖飲品<br>
+                            以及 <span class="color-stat">${bonusCount} 次</span> 的運動！
+                        </p>
+                    </div>`;
+            } else if (baseCount === 66) {
+                const mRate = Math.round((mealTotal / 66) * 100);
+                const dRate = Math.round((drinkTotal / 66) * 100);
+                mileArea.innerHTML = `
+                    <div class="milestone-report">
+                        <div class="milestone-tag" style="background:var(--p-yellow); color:#000;">MILESTONE 66</div>
+                        <p style="margin:0; font-size:15px; line-height:1.8; color:#000;">
+                            <b>鋼鐵紀律：</b><br>
+                            已經 2/3 的路程了，目前的達成率是：<br>
+                            原型食物 <span class="color-stat">${mRate}%</span> / 無糖飲品 <span class="color-stat">${dRate}%</span><br>
+                            還有額外運動 <span class="color-stat">${bonusCount} 次</span>！加油！！
+                        </p>
+                    </div>`;
+            }
+            if(baseCount >= 100) document.getElementById('final-reveal-btn').style.display = 'block';
+        }
+
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('tab-'+id).classList.add('active');
             el.classList.add('active');
+            updateUI();
         }
 
         function processTask(id, pts, isBase) {
@@ -124,11 +187,12 @@
             if(!el.classList.contains('done')) {
                 el.classList.add('done');
                 totalExp += pts;
+                if (id === 'task-meal') mealTotal++;
+                if (id === 'task-drink') drinkTotal++;
                 if(isBase && !todayMarked && baseCount < 100) {
                     baseCount++; todayMarked = true;
-                    updateCellVisual(); checkHundred();
                 }
-                saveData();
+                saveData(); updateUI();
             }
         }
 
@@ -136,59 +200,23 @@
             const el = document.getElementById(id);
             if(!el.classList.contains('collected')) {
                 el.classList.add('collected');
-                totalExp += pts;
-                if(bonusCount < 100) bonusCount++;
-                hasBonusToday = true;
-                if(todayMarked) updateCellVisual();
-                saveData();
+                totalExp += pts; bonusCount++; hasBonusToday = true;
+                if(todayMarked) { const cell = document.getElementById('c' + baseCount); if(cell) cell.className = 'cell gold-filled'; }
+                saveData(); updateUI();
             }
         }
 
-        function updateCellVisual() {
-            const cell = document.getElementById('c' + baseCount);
-            if(cell) cell.className = hasBonusToday ? 'cell gold-filled' : 'cell filled';
-            document.getElementById('display-count').innerText = baseCount;
-            document.getElementById('day-status').innerText = "今日冒險已收錄！";
-        }
-
-        function checkHundred() { if(baseCount === 100) document.getElementById('final-reveal-btn').style.display = 'block'; }
-
         function saveData() {
             const state = {
-                totalExp, baseCount, bonusCount, todayMarked, hasBonusToday,
+                totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
+                mealDone: document.getElementById('task-meal').classList.contains('done'),
+                drinkDone: document.getElementById('task-drink').classList.contains('done'),
                 lastDate: new Date().toDateString(),
                 cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
             };
             localStorage.setItem('c100_state', JSON.stringify(state));
         }
 
-        function initGame() {
-            initGrid();
-            const saved = localStorage.getItem('c100_state');
-            if(saved) {
-                const data = JSON.parse(saved);
-                const isNewDay = data.lastDate !== new Date().toDateString();
-                totalExp = data.totalExp; baseCount = data.baseCount; bonusCount = data.bonusCount;
-                todayMarked = isNewDay ? false : data.todayMarked;
-                hasBonusToday = isNewDay ? false : data.hasBonusToday;
-                if(!isNewDay) {
-                    if(todayMarked) {
-                        document.getElementById('task-meal').classList.add('done');
-                        document.getElementById('task-drink').classList.add('done');
-                        document.getElementById('day-status').innerText = "今日冒險已收錄！";
-                    }
-                    if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
-                }
-                data.cellClasses.forEach((cls, i) => {
-                    const cell = document.getElementById('c' + (i+1));
-                    if(cell) cell.className = cls;
-                });
-                document.getElementById('display-count').innerText = baseCount;
-                checkHundred();
-            }
-        }
-
-        // ✨ 證書文字顏色邏輯
         function openCertificate() {
             const now = new Date();
             const mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
@@ -200,25 +228,52 @@
             document.getElementById('dynamic-text').innerHTML = `
                 終於走到這裡了！<br>
                 從 03/31 – <span class="color-date">${mm}/${dd}</span><br>
-                在這 <span class="color-date">${diffDays}</span> 天裡，終於完成了 100 次挑戰！<br><br>
-                克服了<b>無糖鮮奶茶</b>真的很不容易啊！<br>
-                <span class="color-ques">會想念有糖鮮奶茶的味道嗎？</span><br>
-                <span class="color-ques">這次有成功達到自己想要的樣子了嗎？</span><br><br>
-                但不管如何，妳堅持到了最後。<br>
-                在這段日子內，妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>
-                總共得到 <span class="color-stat">${totalExp}</span> 積分。<br>
-                辛苦了！。
+                在這 <span class="color-date">${diffDays}</span> 天裡，完成了 100 次挑戰！<br><br>
+                克服了<b>無糖鮮奶茶</b>真的很不容易！<br>
+                <span class="color-ques">會想念有糖鮮奶茶的味道嗎？</span><br><br>
+                妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>
+                總共得到 <span class="color-stat">${totalExp}</span> 積分。
             `;
-            
             document.getElementById('res-base').innerText = baseCash.toLocaleString();
             document.getElementById('res-bonus').innerText = bonus.toLocaleString();
             document.getElementById('res-total').innerText = (baseCash + bonus).toLocaleString();
             document.getElementById('cert-overlay').style.display = 'flex';
-            setTimeout(() => { document.getElementById('cert-box').classList.add('show'); }, 100);
+            setTimeout(() => { document.getElementById('cert-box').style.opacity = '1'; }, 100);
         }
 
-        function resetGame() { if(confirm("確定要重置進度？")) { localStorage.clear(); location.reload(); } }
-        function runTest() { baseCount = 100; bonusCount = 100; totalExp = 4000; for(let i=1; i<=100; i++) document.getElementById('c'+i).className = 'cell gold-filled'; checkHundred(); saveData(); }
+        function resetGame() { if(confirm("確定重置進度？")) { localStorage.clear(); location.reload(); } }
+
+        function runTest() {
+            if (baseCount < 33) { 
+                baseCount = 33; mealTotal = 30; drinkTotal = 25; bonusCount = 5; 
+                alert("測試進度：33 次 (紀錄頁應顯示「實質次數」)");
+            } 
+            else if (baseCount < 66) { 
+                baseCount = 66; mealTotal = 60; drinkTotal = 50; bonusCount = 15; 
+                alert("測試進度：66 次 (紀錄頁應顯示「達成率%」)");
+            } 
+            else if (baseCount < 100) {
+                baseCount = 100;
+                alert("測試進度：100 次 (解鎖結業按鈕)");
+            }
+            else { 
+                baseCount = 3; mealTotal = 3; drinkTotal = 3; bonusCount = 0; 
+                alert("測試進度：回到初始狀態 (3次)");
+            }
+            updateUI(); 
+        }
+
+        function rescueData() {
+            if(confirm("補回 3/31-4/2 (3天) 進度？")) {
+                localStorage.clear();
+                const backup = {
+                    totalExp: 40, baseCount: 3, mealTotal: 3, drinkTotal: 3, bonusCount: 0, todayMarked: true, hasBonusToday: false,
+                    lastDate: new Date().toDateString(),
+                    cellClasses: ["cell filled", "cell filled", "cell filled", ...Array(97).fill("cell")]
+                };
+                localStorage.setItem('c100_state', JSON.stringify(backup)); location.reload();
+            }
+        }
     </script>
 </body>
 </html>
