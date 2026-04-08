@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>100次挑戰紀錄</title>
     <style>
-        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --soft-blue: #0074D9; }
+        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --soft-blue: #0074D9; --gray: #888; }
         body { background: var(--bg); color: #333; font-family: "PingFang TC", sans-serif; margin: 0; padding-top: 50px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .header { background: var(--black); color: white; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 3px solid var(--p-red); }
         .nav-top { display: flex; height: 50px; }
@@ -14,29 +14,45 @@
         .nav-item.active { color: var(--p-yellow); background: rgba(255,255,255,0.1); }
         .tab-content { display: none; padding: 20px; width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
         .tab-content.active { display: flex; flex-direction: column; min-height: calc(100vh - 50px); }
+        
+        /* 任務卡片 */
         .game-card, .bonus-card { background: white; border: 2px solid var(--black); padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; }
-        .game-card.done { border-color: #ccc; color: #bbb; opacity: 0.6; }
+        .game-card.done { border-color: #eee; color: #bbb; }
         .check-box { width: 28px; height: 28px; border: 2px solid var(--black); margin-right: 12px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
+        .game-card.done .check-box { border-color: #eee; }
         .game-card.done .check-box::after { content: '✔'; color: var(--p-red); font-size: 24px; font-weight: bold; }
         .bonus-card { background: transparent; border: 1px solid #ddd; color: #bbb; margin-top: 20px; }
         .bonus-card.collected { background: var(--p-yellow); border: 2px solid var(--black); color: var(--black); box-shadow: 4px 4px 0 var(--black); font-weight: bold; }
         .bonus-star { margin-right: 12px; font-size: 18px; color: #ddd; }
         .bonus-card.collected .bonus-star { color: var(--p-red); }
+
+        /* 修正按鈕排版優化 */
+        .fix-zone { margin-top: 30px; text-align: center; }
+        .fix-title { font-size: 10px; color: #bbb; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        .fix-btn-group { display: flex; gap: 10px; justify-content: center; }
+        .fix-btn { flex: 1; max-width: 140px; padding: 8px; border: 1px solid #ddd; background: #fff; font-size: 11px; color: #666; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        .fix-btn:active { background: #f0f0f0; border-color: var(--black); color: var(--black); }
+
+        /* 地圖區域 */
         .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; background: white; padding: 20px; border: 3px solid var(--black); width: 100%; box-sizing: border-box; }
         .cell { aspect-ratio: 1/1; border: 1px solid #eee; background: #f9f9f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #ddd; font-family: "Impact", sans-serif; }
         .cell.filled { background: var(--p-red); color: white; border-color: var(--black); }
         .cell.gold-filled { background: var(--p-yellow); color: var(--black); border-color: var(--black); font-weight: bold; }
+        
+        /* JSON 區塊優化 (更低調) */
+        .json-box { margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        #memoInput { width: 100%; height: 60px; font-size: 9px; color: #999; border: 1px solid #eee; background: #fafafa; padding: 8px; box-sizing: border-box; border-radius: 5px; margin: 10px 0; }
+        .json-tool-btn { font-size: 10px; background: none; border: 1px solid #ddd; color: #999; padding: 3px 8px; border-radius: 3px; cursor: pointer; }
+
+        /* 證書與里程碑 (維持妳的版本) */
         .milestone-report { margin-bottom: 20px; padding: 20px; border: 3px solid var(--black); background: #fff; position: relative; text-align: left; }
         .milestone-tag { position: absolute; top: -12px; left: 10px; color: #fff; padding: 2px 8px; font-size: 10px; font-weight: bold; }
         .color-stat { color: #000; background: var(--p-yellow); padding: 0 4px; font-weight: 900; }
-        #final-reveal-btn { display: none; width: 100%; padding: 16px; background: var(--black); color: #fff; border: none; font-size: 16px; font-weight: bold; margin-bottom: 20px; cursor: pointer; box-shadow: 4px 4px 0 var(--p-red); }
-        #cert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        #cert-box { width: 100%; max-width: 350px; background: #FAF5F0; color: #000; padding: 45px 30px; text-align: left; position: relative; border: 1px solid #ddd; opacity: 0; transition: 0.5s; }
-        .color-date { color: var(--p-red); font-weight: bold; }
-        .color-ques { color: var(--soft-blue); font-style: italic; }
-        .final-amount-val { font-size: 32px; font-weight: 900; color: var(--p-red); font-family: "Impact", sans-serif; }
-        .debug-group { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 5px; opacity: 0.3; }
-        .debug-group button { font-size: 10px; color: #ddd; background: none; border: 1px solid #ddd; padding: 2px 5px; cursor: pointer; }
+        #final-reveal-btn { display: none; width: 100%; padding: 16px; background: var(--black); color: #fff; border: none; font-size: 16px; font-weight: bold; margin-bottom: 20px; box-shadow: 4px 4px 0 var(--p-red); }
+        #cert-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        #cert-box { width: 100%; max-width: 350px; background: #FAF5F0; padding: 45px 30px; text-align: left; position: relative; opacity: 0; transition: 0.5s; }
+        .debug-group { position: fixed; bottom: 15px; right: 15px; display: flex; gap: 5px; opacity: 0.2; }
+        .debug-group button { font-size: 10px; color: #ddd; background: none; border: 1px solid #ddd; padding: 2px 5px; }
     </style>
 </head>
 <body onload="initGame()">
@@ -52,7 +68,17 @@
         <div id="task-meal" class="game-card" onclick="processTask('task-meal', 10, true)"><div class="check-box"></div><div><b>飽足的一餐</b><br><small>原型食物</small></div></div>
         <div id="task-drink" class="game-card" onclick="processTask('task-drink', 10, true)"><div class="check-box"></div><div><b>純粹的飲用</b><br><small>無糖飲品</small></div></div>
         <div id="task-bonus" class="bonus-card" onclick="processBonus('task-bonus', 20)"><span class="bonus-star">★</span><div><b>特殊成就</b><br><small>身體動動</small></div></div>
-        <div id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:25px; flex-grow: 1;">今日任務尚未完成</div>
+        
+        <div id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:30px; letter-spacing: 1px;">今日任務尚未完成</div>
+
+        <div class="fix-zone">
+            <div class="fix-title">CORRECTION SYSTEM</div>
+            <div class="fix-btn-group">
+                <button class="fix-btn" onclick="applyCorrection('A')">方案 A：外力因素</button>
+                <button class="fix-btn" onclick="applyCorrection('B')">方案 B：賀爾蒙影響</button>
+            </div>
+            <p style="font-size:10px; color:#ccc; margin-top:15px; line-height:1.5;">※ 方案 A 將清除紀錄並退回天數<br>※ 方案 B 格子保留但今日積分 8 折</p>
+        </div>
     </div>
 
     <div id="tab-map" class="tab-content">
@@ -61,8 +87,18 @@
         <div class="grid" id="map-grid"></div>
         <p style="text-align:center; font-size:12px; color:#888; margin-top:30px; font-weight:bold;">已累積 <span id="display-count" style="color:var(--p-red); font-size:20px;">0</span> / 100 次冒險</p>
         
-        <div onclick="exportData()" style="text-align:center; font-size:10px; color:#ccc; margin: 40px 0 20px 0; letter-spacing:1px; cursor:pointer;">
-            VER 1.3 / UPDATED: 2026-04-02 19:53 <br> (點擊備份)
+        <div class="json-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:10px; color:#bbb; font-weight:bold;">DATA BACKUP & RESTORE</span>
+                <div>
+                    <button class="json-tool-btn" onclick="pasteToModal()">貼上</button>
+                    <button class="json-tool-btn" onclick="saveJSONRestore()">還原</button>
+                </div>
+            </div>
+            <textarea id="memoInput" spellcheck="false"></textarea>
+            <div onclick="exportData()" style="text-align:center; font-size:10px; color:#ddd; margin-top:20px; cursor:pointer; letter-spacing:1px;">
+                VER 1.5.1 / 點擊生成文字備份
+            </div>
         </div>
     </div>
 
@@ -82,24 +118,23 @@
         </div>
     </div>
 
-    <div class="debug-group">
-        <button onclick="runTest()">[DEBUG]</button>
-        <button onclick="rescueData()">[救命]</button>
+    <div id="backup-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
+        <div style="background:white; width:100%; max-width:400px; padding:20px; border-radius:10px; text-align:center;">
+            <h3 style="margin-top:0;">📋 進度對帳單</h3>
+            <textarea id="backup-text" readonly onclick="this.select()" style="width:100%; height:180px; border:1px solid #ddd; padding:10px; box-sizing:border-box; font-size:14px; line-height:1.6; margin-bottom:15px;"></textarea>
+            <button onclick="document.getElementById('backup-overlay').style.display='none'" style="width:100%; padding:15px; background:var(--black); color:white; border:none; border-radius:5px; font-weight:bold;">[ 關閉備份 ]</button>
+        </div>
     </div>
 
-    <div id="backup-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
-    <div style="background:white; width:100%; max-width:400px; padding:20px; border-radius:10px; text-align:center;">
-        <h3 style="margin-top:0;">📋 進度對帳單</h3>
-        <p style="font-size:12px; color:#666;">點擊下方框框即可全選複製：</p>
-        <textarea id="backup-text" readonly onclick="this.select()" style="width:100%; height:180px; border:1px solid #ddd; padding:10px; box-sizing:border-box; font-size:14px; line-height:1.6; margin-bottom:15px;"></textarea>
-        <button onclick="document.getElementById('backup-overlay').style.display='none'" style="width:100%; padding:15px; background:var(--black); color:white; border:none; border-radius:5px; font-weight:bold; font-size:16px;">[ 關閉備份 ]</button>
+    <div class="debug-group">
+        <button onclick="runTest()">[TEST]</button>
+        <button onclick="rescueData()">[SOS]</button>
     </div>
-</div>
 
     <script>
-        // 核心數據 (3/31-4/2 初始狀態)
+        // 核心邏輯完全保留妳的版本與 A/B 修正整合
         let totalExp = 40, baseCount = 3, mealTotal = 3, drinkTotal = 3, bonusCount = 0;
-        let todayMarked = true, hasBonusToday = false;
+        let todayMarked = false, hasBonusToday = false;
         const startDate = new Date('2026-03-31'), deadline = new Date('2026-07-31');
 
         function initGame() {
@@ -108,7 +143,7 @@
             if(saved) {
                 const d = JSON.parse(saved);
                 totalExp = d.totalExp; baseCount = d.baseCount; 
-                mealTotal = d.mealTotal || 3; drinkTotal = d.drinkTotal || 3; bonusCount = d.bonusCount || 0;
+                mealTotal = d.mealTotal || 0; drinkTotal = d.drinkTotal || 0; bonusCount = d.bonusCount || 0;
                 const isNewDay = d.lastDate !== new Date().toDateString();
                 todayMarked = isNewDay ? false : d.todayMarked;
                 hasBonusToday = isNewDay ? false : d.hasBonusToday;
@@ -134,30 +169,26 @@
         function updateUI() {
             document.getElementById('display-count').innerText = baseCount;
             document.getElementById('day-status').innerText = todayMarked ? "今日冒險已收錄！" : "今日任務尚未完成";
+            document.getElementById('memoInput').value = JSON.stringify(getCurrentState());
             for(let i=1; i<=100; i++) {
                 const cell = document.getElementById('c' + i);
                 if(i <= baseCount) {
                     if(!cell.classList.contains('filled') && !cell.classList.contains('gold-filled')) cell.classList.add('filled');
                 } else { cell.className = 'cell'; }
             }
+            // 里程碑邏輯
             const mileArea = document.getElementById('milestone-area');
-            if(!mileArea) return; 
-            mileArea.innerHTML = "";
-            if (baseCount === 33) {
-                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-red);">MILESTONE 33</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>實質蛻變：</b><br>在這 33 次挑戰中，妳完成了 <span class="color-stat">${mealTotal} 次</span> 原型食物、<span class="color-stat">${drinkTotal} 次</span> 無糖飲品<br>以及 <span class="color-stat">${bonusCount} 次</span> 的運動！</p></div>`;
-            } else if (baseCount === 66) {
-                const mRate = Math.round((mealTotal / 66) * 100);
-                const dRate = Math.round((drinkTotal / 66) * 100);
-                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-yellow); color:#000;">MILESTONE 66</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>鋼鐵紀律：</b><br>已經 2/3 的路程了，目前的達成率是：<br>原型食物 <span class="color-stat">${mRate}%</span> / 無糖飲品 <span class="color-stat">${dRate}%</span><br>還有額外運動 <span class="color-stat">${bonusCount} 次</span>！加油！！</p></div>`;
+            if(mileArea) {
+                mileArea.innerHTML = "";
+                if (baseCount === 33) {
+                    mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-red);">MILESTONE 33</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>實質蛻變：</b><br>這 33 次挑戰中，妳完成了 <span class="color-stat">${mealTotal} 次</span> 原型食物、<span class="color-stat">${drinkTotal} 次</span> 無糖飲品<br>以及 <span class="color-stat">${bonusCount} 次</span> 的運動！</p></div>`;
+                } else if (baseCount === 66) {
+                    const mRate = Math.round((mealTotal / 66) * 100);
+                    const dRate = Math.round((drinkTotal / 66) * 100);
+                    mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-yellow); color:#000;">MILESTONE 66</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>鋼鐵紀律：</b><br>已經 2/3 的路程了，達成率：<br>原型食物 <span class="color-stat">${mRate}%</span> / 無糖飲品 <span class="color-stat">${dRate}%</span><br>還有運動 <span class="color-stat">${bonusCount} 次</span>！</p></div>`;
+                }
             }
             if(baseCount >= 100) document.getElementById('final-reveal-btn').style.display = 'block';
-        }
-
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('tab-'+id).classList.add('active'); el.classList.add('active');
-            updateUI();
         }
 
         function processTask(id, pts, isBase) {
@@ -174,37 +205,96 @@
         function processBonus(id, pts) {
             const el = document.getElementById(id);
             if(!el.classList.contains('collected')) {
-                el.classList.add('collected'); totalExp += pts; bonusCount++; hasBonusToday = true;
-                if(todayMarked) { const cell = document.getElementById('c' + baseCount); if(cell) cell.className = 'cell gold-filled'; }
-                saveData(); updateUI();
+                el.classList.add('collected'); 
+                totalExp += pts; 
+                bonusCount++; 
+                hasBonusToday = true;
+
+                // --- 修正邏輯：如果今天還沒標記過，運動也要算一天！ ---
+                if(!todayMarked && baseCount < 100) {
+                    baseCount++; 
+                    todayMarked = true;
+                }
+                // ----------------------------------------------
+
+                // 只要今天有紀錄了，就去把最後一格染成金色
+                const cell = document.getElementById('c' + baseCount);
+                if(cell) cell.className = 'cell gold-filled';
+                
+                saveData(); 
+                updateUI();
             }
         }
 
-        function saveData() {
-            const state = {
+        function applyCorrection(type) {
+            if(!todayMarked) return alert("今日尚無紀錄。");
+            if(type === 'A') {
+                if(confirm("確定執行方案 A？(紀錄扣回)")) {
+                    baseCount--;
+                    if(document.getElementById('task-meal').classList.contains('done')) { mealTotal--; totalExp -= 10; }
+                    if(document.getElementById('task-drink').classList.contains('done')) { drinkTotal--; totalExp -= 10; }
+                    if(hasBonusToday) { bonusCount--; totalExp -= 20; }
+                    todayMarked = false; hasBonusToday = false;
+                    document.getElementById('task-meal').classList.remove('done');
+                    document.getElementById('task-drink').classList.remove('done');
+                    document.getElementById('task-bonus').classList.remove('collected');
+                    saveData(); updateUI();
+                }
+            } else if(type === 'B') {
+                if(confirm("確定執行方案 B？(積分打8折)")) {
+                    let pts = 0;
+                    if(document.getElementById('task-meal').classList.contains('done')) pts += 10;
+                    if(document.getElementById('task-drink').classList.contains('done')) pts += 10;
+                    if(hasBonusToday) pts += 20;
+                    totalExp -= Math.floor(pts * 0.2);
+                    saveData(); updateUI();
+                    alert("已調整。");
+                }
+            }
+        }
+
+        function getCurrentState() {
+            return {
                 totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
                 mealDone: document.getElementById('task-meal').classList.contains('done'),
                 drinkDone: document.getElementById('task-drink').classList.contains('done'),
                 lastDate: new Date().toDateString(),
                 cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
             };
-            localStorage.setItem('c100_state', JSON.stringify(state));
         }
 
+        function saveData() { localStorage.setItem('c100_state', JSON.stringify(getCurrentState())); }
+
         function exportData() {
-                    const saved = localStorage.getItem('c100_state');
-                    if(saved) {
-                        const d = JSON.parse(saved);
-                        // 這裡就是妳要的純文字，我會傳給妳
-                        const report = `=== 進度備份 ===\n累計天數：${d.baseCount} / 100\n原型食物：${d.mealTotal} 次\n無糖飲品：${d.drinkTotal} 次\n額外運動：${d.bonusCount} 次\n最後更新：${d.lastDate}\n=======================`;
-                        
-                        // 讓大視窗彈出來
-                        document.getElementById('backup-text').value = report;
-                        document.getElementById('backup-overlay').style.display = 'flex';
-                    } else { 
-                        alert("目前還沒有紀錄可以備份喔！"); 
-                    }
+            const report = `=== 進度備份 ===\n累積天數：${baseCount}\n原型食物：${mealTotal}\n無糖飲品：${drinkTotal}\n額外運動：${bonusCount}\n總積分：${totalExp}\n==============`;
+            document.getElementById('backup-text').value = report;
+            document.getElementById('backup-overlay').style.display = 'flex';
+        }
+
+        async function pasteToModal() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('memoInput').value = text;
+            } catch (err) { alert("請手動貼上。"); }
+        }
+
+        function saveJSONRestore() {
+            try {
+                const content = document.getElementById('memoInput').value;
+                const d = JSON.parse(content);
+                if(d.baseCount !== undefined) {
+                    localStorage.setItem('c100_state', content);
+                    location.reload();
                 }
+            } catch(e) { alert("格式不正確。"); }
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active'); el.classList.add('active');
+            updateUI();
+        }
 
         function openCertificate() {
             const now = new Date();
@@ -213,7 +303,7 @@
             const completionRate = Math.round(((baseCount + bonusCount) / 100) * 100);
             const baseCash = Math.round(totalExp * 1.6667);
             const bonus = (now <= deadline) ? 2000 : 0;
-            document.getElementById('dynamic-text').innerHTML = `終於走到這裡了！<br>從 03/31 – <span class="color-date">${mm}/${dd}</span><br>在這 <span class="color-date">${diffDays}</span> 天裡，完成了 100 次挑戰！<br><br>克服了<b>無糖鮮奶茶</b>真的很不容易！<br><span class="color-ques">會想念有糖鮮奶茶的味道嗎？</span><br><br>妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>總共得到 <span class="color-stat">${totalExp}</span> 積分。`;
+            document.getElementById('dynamic-text').innerHTML = `終於走到這裡了！<br>從 03/31 – <span style="color:var(--p-red);font-weight:bold;">${mm}/${dd}</span><br>在這 <span style="color:var(--p-red);font-weight:bold;">${diffDays}</span> 天裡，完成了 100 次挑戰！<br><br>克服了<b>無糖鮮奶茶</b>真的很不容易！<br><span style="color:var(--soft-blue);font-style:italic;">會想念有糖鮮奶茶的味道嗎？</span><br><br>妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>總共得到 <span class="color-stat">${totalExp}</span> 積分。`;
             document.getElementById('res-base').innerText = baseCash.toLocaleString();
             document.getElementById('res-bonus').innerText = bonus.toLocaleString();
             document.getElementById('res-total').innerText = (baseCash + bonus).toLocaleString();
@@ -221,19 +311,10 @@
             setTimeout(() => { document.getElementById('cert-box').style.opacity = '1'; }, 100);
         }
 
-        function resetGame() { if(confirm("確定重置進度？")) { localStorage.clear(); location.reload(); } }
-
-        function runTest() {
-            if (baseCount < 33) { baseCount = 33; mealTotal = 30; drinkTotal = 25; bonusCount = 5; alert("測試 33 次模式"); } 
-            else if (baseCount < 66) { baseCount = 66; mealTotal = 60; drinkTotal = 50; bonusCount = 15; alert("測試 66 次模式"); } 
-            else if (baseCount < 100) { baseCount = 100; alert("測試 100 次結業"); }
-            else { baseCount = 3; mealTotal = 3; drinkTotal = 3; bonusCount = 0; alert("回到初始狀態"); }
-            updateUI(); 
-        }
-
+        function resetGame() { if(confirm("確定重置？")) { localStorage.clear(); location.reload(); } }
+        function runTest() { baseCount = (baseCount < 100) ? 100 : 3; updateUI(); }
         function rescueData() {
-            if(confirm("補回 3/31-4/2 (3天) 進度？")) {
-                localStorage.clear();
+            if(confirm("還原初始紀錄？")) {
                 const backup = { totalExp: 40, baseCount: 3, mealTotal: 3, drinkTotal: 3, bonusCount: 0, todayMarked: true, hasBonusToday: false, lastDate: new Date().toDateString(), cellClasses: ["cell filled", "cell filled", "cell filled", ...Array(97).fill("cell")] };
                 localStorage.setItem('c100_state', JSON.stringify(backup)); location.reload();
             }
