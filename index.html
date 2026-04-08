@@ -156,7 +156,7 @@
 
         function applyCorrection(type) {
                     if(type === 'A') {
-                        if(confirm("CLEAR：確定要清除今天紀錄嗎？\n(這會清除今日勾選狀態並退回一格天數)")) {
+                        if(confirm("CLEAR：確定要清除今天紀錄嗎？")) {
                             // 1. 只有今天有標記時才扣天數
                             if(todayMarked && baseCount > 0) {
                                 baseCount--;
@@ -166,7 +166,14 @@
                             hasBonusToday = false;
                             
                             // 3. 儲存修正後的狀態，而不是刪除它！
-                            saveData(); 
+                            const state = {
+                        totalExp, baseCount, mealTotal, drinkTotal, bonusCount, 
+                        todayMarked: false, hasBonusToday: false,
+                        mealDone: false, drinkDone: false,
+                        lastDate: new Date().toDateString()
+                        // 故意不傳 cellClasses，這樣重整後地圖就會是乾淨的
+                    };
+                    localStorage.setItem('c100_state', JSON.stringify(state));
                             
                             // 4. 重新整理頁面同步 UI
                             location.reload(); 
@@ -175,7 +182,7 @@
                         if(confirm("CONTROL：進入調節模式？")) { 
                             totalExp -= 4; 
                             saveData(); 
-                            alert("已完成。"); 
+                            alert("已修正。"); 
                         }
                     }
                 }
