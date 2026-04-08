@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>100次挑戰紀錄</title>
     <style>
-        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --soft-blue: #0074D9; --gray: #bbb; --gray-light: #eee; }
+        :root { --p-red: #FF4136; --p-yellow: #FFDC00; --bg: #F8F4F0; --black: #000; --gray: #bbb; --gray-light: #eee; }
         body { background: var(--bg); color: #333; font-family: "PingFang TC", sans-serif; margin: 0; padding-top: 50px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .header { background: var(--black); color: white; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 3px solid var(--p-red); }
         .nav-top { display: flex; height: 50px; }
@@ -31,27 +31,17 @@
         .cell.filled { background: var(--p-red); color: white; border-color: var(--black); }
         .cell.gold-filled { background: var(--p-yellow); color: var(--black); border-color: var(--black); font-weight: bold; }
 
-        /* 修正區點點 */
+        /* 修正與工具區 */
         .fix-trigger { text-align: center; color: var(--gray); font-size: 18px; cursor: pointer; margin-top: 10px; padding: 5px; }
         .fix-zone { display: none; margin-top: 15px; padding: 15px; border: 1px solid var(--gray-light); border-radius: 8px; background: #fff; text-align: center; }
         .fix-btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
         .fix-btn { flex: 1; max-width: 120px; padding: 8px; border: 1px solid var(--gray-light); background: #fff; font-size: 11px; color: #777; border-radius: 4px; cursor: pointer; }
 
-        /* ✨ 改動：JSON 導出/還原區 */
         .json-box { margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; }
         .json-tool-group { display: flex; gap: 12px; justify-content: center; }
-        .json-action-btn { flex: 1; padding: 10px; border: 1px solid var(--gray-light); background: #fff; color: #999; font-size: 11px; border-radius: 4px; cursor: pointer; letter-spacing: 1px; }
-        .json-action-btn:active { background: #fcfcfc; color: var(--black); border-color: var(--gray); }
-        
-        /* 隱藏的輸入區域 */
-        #restore-zone { display: none; margin-top: 15px; animation: fadeIn 0.3s; }
+        .json-action-btn { flex: 1; padding: 10px; border: 1px solid var(--gray-light); background: #fff; color: #999; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        #restore-zone { display: none; margin-top: 15px; }
         #memoInput { width: 100%; height: 80px; font-size: 10px; border: 1px solid var(--gray-light); background: #fff; padding: 10px; box-sizing: border-box; border-radius: 4px; margin-top: 10px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* 備份彈窗內容 */
-        #backup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:20px; box-sizing:border-box; }
-        .backup-modal { background:white; width:100%; max-width:400px; padding:20px; border-radius:10px; text-align:center; }
-        #backup-text { width:100%; height:160px; border:1px solid #eee; padding:15px; box-sizing:border-box; font-size:14px; line-height:1.8; margin-bottom:15px; font-family: monospace; white-space: pre-wrap; text-align: left; }
     </style>
 </head>
 <body onload="initGame()">
@@ -72,39 +62,28 @@
         <div id="fix-zone" class="fix-zone">
             <div style="font-size:10px; color:var(--gray); font-weight:bold;">CORRECTION SYSTEM</div>
             <div class="fix-btn-group">
-                <button class="fix-btn" onclick="applyCorrection('A')">方案 A</button>
-                <button class="fix-btn" onclick="applyCorrection('B')">方案 B</button>
+                <button class="fix-btn" onclick="applyCorrection('A')">CLEAR</button>
+                <button class="fix-btn" onclick="applyCorrection('B')">CONTROL</button>
             </div>
         </div>
     </div>
 
     <div id="tab-map" class="tab-content">
-        <div id="milestone-area"></div>
         <div class="grid" id="map-grid"></div>
         <p style="text-align:center; font-size:12px; color:#888; margin-top:30px; font-weight:bold;">已累積 <span id="display-count" style="color:var(--p-red); font-size:20px;">0</span> / 100 次冒險</p>
         
         <div class="json-box">
             <div class="json-tool-group">
-                <button class="json-action-btn" onclick="exportData()">導出數據</button>
+                <button class="json-action-btn" onclick="exportJSON()">導出數據</button>
                 <button class="json-action-btn" onclick="toggleRestoreZone()">還原數據</button>
             </div>
-            
             <div id="restore-zone">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:10px; color:var(--gray); font-weight:bold;">貼上 JSON 數據</span>
-                    <button class="json-action-btn" style="flex:none; padding:3px 10px; background:var(--black); color:#fff;" onclick="saveJSONRestore()">確定還原</button>
+                    <span style="font-size:10px; color:var(--gray); font-weight:bold;">貼上數據</span>
+                    <button class="json-action-btn" style="flex:none; padding:3px 10px; background:#000; color:#fff;" onclick="importJSON()">確認還原</button>
                 </div>
                 <textarea id="memoInput" placeholder='請在此處貼上代碼...'></textarea>
             </div>
-        </div>
-    </div>
-
-    <div id="backup-overlay">
-        <div class="backup-modal">
-            <h3 style="margin-top:0; font-size:16px;">📋 數據已複製</h3>
-            <div id="backup-text"></div>
-            <p style="font-size:10px; color:#aaa; margin-bottom:15px;">JSON 數據也已同步複製到剪貼簿</p>
-            <button onclick="document.getElementById('backup-overlay').style.display='none'" style="width:100%; padding:15px; background:var(--black); color:white; border:none; border-radius:5px; font-weight:bold;">關閉</button>
         </div>
     </div>
 
@@ -152,22 +131,14 @@
             }
         }
 
-        function toggleFixZone() {
-            const z = document.getElementById('fix-zone');
-            z.style.display = (z.style.display === 'block') ? 'none' : 'block';
-        }
-
-        function toggleRestoreZone() {
-            const z = document.getElementById('restore-zone');
-            z.style.display = (z.style.display === 'block') ? 'none' : 'block';
-        }
+        function toggleFixZone() { const z = document.getElementById('fix-zone'); z.style.display = (z.style.display === 'block') ? 'none' : 'block'; }
+        function toggleRestoreZone() { const z = document.getElementById('restore-zone'); z.style.display = (z.style.display === 'block') ? 'none' : 'block'; }
 
         function processTask(id, pts, isBase) {
             const el = document.getElementById(id);
             if(!el.classList.contains('done')) {
                 el.classList.add('done'); totalExp += pts;
-                if (id === 'task-meal') mealTotal++;
-                if (id === 'task-drink') drinkTotal++;
+                if (id === 'task-meal') mealTotal++; if (id === 'task-drink') drinkTotal++;
                 if(isBase && !todayMarked && baseCount < 100) { baseCount++; todayMarked = true; }
                 saveData(); updateUI();
             }
@@ -176,29 +147,38 @@
         function processBonus(id, pts) {
             const el = document.getElementById(id);
             if(!el.classList.contains('collected')) {
-                el.classList.add('collected'); totalExp += pts; bonusCount++;
-                hasBonusToday = true;
+                el.classList.add('collected'); totalExp += pts; bonusCount++; hasBonusToday = true;
                 if(!todayMarked && baseCount < 100) { baseCount++; todayMarked = true; }
-                const cell = document.getElementById('c' + baseCount);
-                if(cell) cell.className = 'cell gold-filled';
+                const cell = document.getElementById('c' + baseCount); if(cell) cell.className = 'cell gold-filled';
                 saveData(); updateUI();
             }
         }
 
         function applyCorrection(type) {
-            if(type === 'A') {
-                if(confirm("方案 A：確定要退回一格紀錄嗎？")) {
-                    if(todayMarked) baseCount--;
-                    todayMarked = false; hasBonusToday = false;
-                    localStorage.removeItem('c100_state'); location.reload(); 
+                    if(type === 'A') {
+                        if(confirm("CLEAR：確定要清除今天紀錄嗎？\n(這會清除今日勾選狀態並退回一格天數)")) {
+                            // 1. 只有今天有標記時才扣天數
+                            if(todayMarked && baseCount > 0) {
+                                baseCount--;
+                            }
+                            // 2. 重置今日所有狀態
+                            todayMarked = false;
+                            hasBonusToday = false;
+                            
+                            // 3. 儲存修正後的狀態，而不是刪除它！
+                            saveData(); 
+                            
+                            // 4. 重新整理頁面同步 UI
+                            location.reload(); 
+                        }
+                    } else if(type === 'B') {
+                        if(confirm("CONTROL：進入調節模式？")) { 
+                            totalExp -= 4; 
+                            saveData(); 
+                            alert("已完成。"); 
+                        }
+                    }
                 }
-            } else if(type === 'B') {
-                if(confirm("方案 B：執行積分 8 折扣除？")) {
-                    totalExp -= 4; saveData(); alert("已扣除 4 分。");
-                    document.getElementById('fix-zone').style.display = 'none';
-                }
-            }
-        }
 
         function saveData() {
             const state = {
@@ -211,43 +191,23 @@
             localStorage.setItem('c100_state', JSON.stringify(state));
         }
 
-        // ✨ 改動：導出數據邏輯 (自動複製 JSON + 顯示妳要的文字備份)
-        async function exportData() {
-            const stateStr = localStorage.getItem('c100_state') || JSON.stringify(getCurrentState());
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit' }).replace(/,/g, '');
-            
-            // 妳要的文字格式 (不顯示積分)
-            const textBackup = `=== 進度備份 ===
-累計天數：${baseCount} / 100
-原型食物：${mealTotal} 次
-無糖飲品：${drinkTotal} 次
-額外運動：${bonusCount} 次
-最後更新：${dateStr}
-=======================`;
-
-            try {
-                await navigator.clipboard.writeText(stateStr);
-                document.getElementById('backup-text').innerText = textBackup;
-                document.getElementById('backup-overlay').style.display = 'flex';
-            } catch (err) {
-                alert("複製失敗，請手動截圖文字備份。");
-            }
+        async function exportJSON() {
+            const state = localStorage.getItem('c100_state');
+            if(state) {
+                await navigator.clipboard.writeText(state);
+                alert("數據已複製到剪貼簿！");
+            } else { alert("目前尚無數據可導出。"); }
         }
 
-        function getCurrentState() {
-            return { totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday, lastDate: new Date().toDateString() };
-        }
-
-        function saveJSONRestore() {
+        function importJSON() {
             try {
                 const content = document.getElementById('memoInput').value;
                 const d = JSON.parse(content);
                 if(d.baseCount !== undefined) {
                     localStorage.setItem('c100_state', content);
                     location.reload();
-                } else { alert("格式有誤"); }
-            } catch(e) { alert("請輸入有效的 JSON 數據"); }
+                } else { alert("數據格式有誤。"); }
+            } catch(e) { alert("請貼上正確的數據代碼。"); }
         }
 
         function switchTab(id, el) {
