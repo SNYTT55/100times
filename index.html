@@ -90,9 +90,12 @@
                 <textarea id="memoInput" placeholder='請在此處貼上 JSON 代碼...'></textarea>
             </div>
         </div>
-
+            <div style="text-align:center; font-size:11px; color:var(--soft-blue); margin-bottom:10px; font-weight:bold;">
+        LAST RECORDED: <span id="last-time">---</span>
+    </div>
+    
         <div style="text-align:center; font-size:10px; color:#ccc; margin: 40px 0 20px 0; letter-spacing:1px;">
-            VER / UPDATED: 2026-04-09
+            VER / UPDATED: 2026-04-11
         </div>
     </div>
 
@@ -127,24 +130,32 @@
         const startDate = new Date('2026-03-31'), deadline = new Date('2026-08-31');
 
         function initGame() {
-            initGrid();
-            const saved = localStorage.getItem('c100_state');
-            if(saved) {
-                const d = JSON.parse(saved);
-                totalExp = d.totalExp; baseCount = d.baseCount; 
-                mealTotal = d.mealTotal || 3; drinkTotal = d.drinkTotal || 3; bonusCount = d.bonusCount || 0;
-                const isNewDay = d.lastDate !== new Date().toDateString();
-                todayMarked = isNewDay ? false : (d.todayMarked || false);
-                hasBonusToday = isNewDay ? false : (d.hasBonusToday || false);
-                if(!isNewDay) {
-                    if(d.mealDone) document.getElementById('task-meal').classList.add('done');
-                    if(d.drinkDone) document.getElementById('task-drink').classList.add('done');
-                    if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
+                    initGrid();
+                    const saved = localStorage.getItem('c100_state');
+                    if(saved) {
+                        const d = JSON.parse(saved); // 確保 d 在這裡被定義
+                        totalExp = d.totalExp; baseCount = d.baseCount; 
+                        mealTotal = d.mealTotal || 0; drinkTotal = d.drinkTotal || 0; bonusCount = d.bonusCount || 0;
+                        const isNewDay = d.lastDate !== new Date().toDateString();
+                        todayMarked = isNewDay ? false : (d.todayMarked || false);
+                        hasBonusToday = isNewDay ? false : (d.hasBonusToday || false);
+                        
+                        // 顯示上次紀錄時間
+                        if(d.saveTimestamp) {
+                            document.getElementById('last-time').innerText = d.saveTimestamp;
+                        }
+        
+                        if(!isNewDay) {
+                            if(d.mealDone) document.getElementById('task-meal').classList.add('done');
+                            if(d.drinkDone) document.getElementById('task-drink').classList.add('done');
+                            if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
+                        }
+                        if(d.cellClasses) d.cellClasses.forEach((cls, i) => { 
+                            if(document.getElementById('c'+(i+1))) document.getElementById('c'+(i+1)).className = cls; 
+                        });
+                    }
+                    updateUI();
                 }
-                if(d.cellClasses) d.cellClasses.forEach((cls, i) => { if(document.getElementById('c'+(i+1))) document.getElementById('c'+(i+1)).className = cls; });
-            }
-            updateUI();
-        }
 
         function initGrid() {
             const grid = document.getElementById('map-grid'); grid.innerHTML = '';
@@ -178,15 +189,25 @@
         }
 
         function saveData() {
-            const state = {
-                totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
-                mealDone: document.getElementById('task-meal').classList.contains('done'),
-                drinkDone: document.getElementById('task-drink').classList.contains('done'),
-                lastDate: new Date().toDateString(),
-                cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
-            };
-            localStorage.setItem('c100_state', JSON.stringify(state));
-        }
+                    const now = new Date();
+                    // 格式化時間：月/日 時:分
+                    const timeString = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                    
+                    const state = {
+                        totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
+                        mealDone: document.getElementById('task-meal').classList.contains('done'),
+                        drinkDone: document.getElementById('task-drink').classList.contains('done'),
+                        lastDate: new Date().toDateString(),
+                        saveTimestamp: timeString, // 儲存時間戳記
+                        cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
+                    };
+                    localStorage.setItem('c100_state', JSON.stringify(state));
+                    
+                    // 確保介面即時更新
+                    const timeEl = document.getElementById('last-time');
+                    if(timeEl) timeEl.innerText = timeString;
+                }
+
 
         // 新增：JSON 導出
         async function exportJSON() {
