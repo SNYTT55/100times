@@ -236,11 +236,40 @@
         function applyCorrection(type) {
             if(type === 'A') {
                 if(confirm("方案 A：確定要退回一格紀錄嗎？")) {
-                    if(baseCount > 0) baseCount--;
-                    todayMarked = false; hasBonusToday = false;
-                    const state = { totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked: false, hasBonusToday: false, lastDate: new Date().toDateString() };
-                    localStorage.setItem('c100_state', JSON.stringify(state));
-                    location.reload(); 
+                    if(baseCount > 0) {
+                        // 1. 取得當前最後一格的狀態
+                        const lastCell = document.getElementById('c' + baseCount);
+                        
+                        // 2. 根據最後一格的顏色，判定要扣掉什麼次數
+                        // 如果是金色的，代表有 bonus
+                        if(lastCell.classList.contains('gold-filled')) {
+                            if(bonusCount > 0) bonusCount--;
+                        }
+                        
+                        // 3. 檢查當天任務勾選狀態，同步扣除細項次數
+                        // 注意：這裡假設 ERASE 是用來撤銷「最後一次」的操作
+                        if(document.getElementById('task-meal').classList.contains('done')) {
+                            if(mealTotal > 0) mealTotal--;
+                        }
+                        if(document.getElementById('task-drink').classList.contains('done')) {
+                            if(drinkTotal > 0) drinkTotal--;
+                        }
+
+                        // 4. 退回總進度與重設今日狀態
+                        baseCount--;
+                        todayMarked = false; 
+                        hasBonusToday = false;
+                        
+                        // 5. 強制重整以套用新數據
+                        const state = { 
+                            totalExp: totalExp - 10, // 假設退回一格至少扣 10 分
+                            baseCount, mealTotal, drinkTotal, bonusCount, 
+                            todayMarked: false, hasBonusToday: false, 
+                            lastDate: "" // 清空日期讓今天可以重新紀錄
+                        };
+                        localStorage.setItem('c100_state', JSON.stringify(state));
+                        location.reload(); 
+                    }
                 }
             } else if(type === 'B') {
                 if(confirm("方案 B：執行積分 8 折扣除？")) { totalExp -= 4; saveData(); alert("已扣除 4 分。"); }
