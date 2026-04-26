@@ -211,12 +211,14 @@
 
         // 新增：JSON 導出
         async function exportJSON() {
-            const state = localStorage.getItem('c100_state');
-            if(state) {
-                await navigator.clipboard.writeText(state);
-                alert("JSON 數據已複製到剪貼簿！");
-            }
+        const state = localStorage.getItem('c100_state');
+        if(state) {
+            // 轉為 Base64 亂碼
+            const blindBoxCode = btoa(encodeURIComponent(state));
+            await navigator.clipboard.writeText(blindBoxCode);
+            alert("數據已封裝並複製！");
         }
+    }
 
         // 新增：JSON 還原
         function importJSON() {
@@ -298,7 +300,12 @@
             const saved = localStorage.getItem('c100_state');
             if(saved) {
                 const d = JSON.parse(saved);
-                const report = `=== 進度備份 ===\n累計天數：${d.baseCount} / 100\n原型食物：${d.mealTotal} 次\n無糖飲品：${d.drinkTotal} 次\n額外運動：${d.bonusCount} 次\n最後更新：${d.lastDate}\n=======================`;
+                // 計算百分比
+                const percent = d.baseCount; // 因為總數是 100，所以 baseCount 就是 %
+                const bar = "█".repeat(Math.floor(percent / 5)) + "░".repeat(20 - Math.floor(percent / 5));
+                
+                const report = `=== 挑戰進度 ===\n[${bar}] ${percent}%\n最後更新：${d.lastDate}\n===============`;
+                
                 document.getElementById('backup-text').value = report;
                 document.getElementById('backup-overlay').style.display = 'flex';
             }
