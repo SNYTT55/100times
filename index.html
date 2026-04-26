@@ -223,13 +223,36 @@
         // 新增：JSON 還原
         function importJSON() {
             try {
-                const content = document.getElementById('memoInput').value;
+                let content = document.getElementById('memoInput').value.trim();
+                
+                // 判斷是否為 Base64 加密格式（通常不含 { 符號）
+                if (!content.startsWith('{')) {
+                    try {
+                        // 解碼 Base64，並處理中文字元
+                        content = decodeURIComponent(atob(content));
+                    } catch (e) {
+                        // 如果 atob 失敗，可能是單純的 Base64 沒經過 URI 編碼
+                        try {
+                            content = atob(content);
+                        } catch (e2) {
+                            throw new Error("解碼失敗，請確保代碼完整");
+                        }
+                    }
+                }
+                
                 const d = JSON.parse(content);
                 if(d.baseCount !== undefined) {
-                    localStorage.setItem('c100_state', content);
+                    // 重新存入 localStorage
+                    localStorage.setItem('c100_state', JSON.stringify(d));
+                    alert("🔒 盲盒數據已成功歸位！頁面即將重整...");
                     location.reload();
-                } else { alert("數據格式有誤。"); }
-            } catch(e) { alert("請貼上正確的 JSON。"); }
+                } else { 
+                    alert("數據格式有誤，找不到進度資料。"); 
+                }
+            } catch(e) { 
+                alert("匯入失敗：請確保貼上的代碼是完整的。"); 
+                console.error(e);
+            }
         }
 
         function toggleRestoreZone() { const z = document.getElementById('restore-zone'); z.style.display = (z.style.display === 'block') ? 'none' : 'block'; }
