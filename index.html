@@ -18,7 +18,10 @@
         .game-card.done { border-color: #ccc; color: #bbb; opacity: 0.6; }
         .check-box { width: 28px; height: 28px; border: 2px solid var(--black); margin-right: 12px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
         .game-card.done .check-box::after { content: '✔'; color: var(--p-red); font-size: 24px; font-weight: bold; }
-        .bonus-card { background: transparent; border: 1px solid #ddd; color: #bbb; margin-top: 20px; display: none !important; }
+        .bonus-card { background: transparent; border: 1px solid #ddd; color: #bbb; margin-top: 20px; }
+        .bonus-card.collected { background: var(--p-yellow); border: 2px solid var(--black); color: var(--black); box-shadow: 4px 4px 0 var(--black); font-weight: bold; }
+        .bonus-star { margin-right: 12px; font-size: 18px; color: #ddd; }
+        .bonus-card.collected .bonus-star { color: var(--p-red); }
         .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; background: white; padding: 20px; border: 3px solid var(--black); width: 100%; box-sizing: border-box; }
         .cell { aspect-ratio: 1/1; border: 1px solid #eee; background: #f9f9f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #ddd; font-family: "Impact", sans-serif; }
         .cell.filled { background: var(--p-red); color: white; border-color: var(--black); }
@@ -57,13 +60,13 @@
     </header>
 
     <div id="tab-play" class="tab-content active">
-        <div id="task-meal" class="game-card" onclick="processTask('task-meal')"><div class="check-box"></div><div><b>飽足的一餐</b><br><small>原型食物</small></div></div>
-        <div id="task-drink" class="game-card" onclick="processTask('task-drink')"><div class="check-box"></div><div><b>純粹的飲用</b><br><small>無糖飲品</small></div></div>
-        <div id="task-bonus" class="bonus-card" style="display:none;"><span class="bonus-star">★</span><div><b>特殊成就</b><br><small>身體動動</small></div></div>
+        <div id="task-meal" class="game-card" onclick="processTask('task-meal', 10, true)"><div class="check-box"></div><div><b>飽足的一餐</b><br><small>原型食物</small></div></div>
+        <div id="task-drink" class="game-card" onclick="processTask('task-drink', 10, true)"><div class="check-box"></div><div><b>純粹的飲用</b><br><small>無糖飲品</small></div></div>
+        <div id="task-bonus" class="bonus-card" onclick="processBonus('task-bonus', 20)"><span class="bonus-star">★</span><div><b>特殊成就</b><br><small>身體動動</small></div></div>
         <div id="day-status" style="text-align:center; font-size:12px; color:#aaa; margin-top:25px; flex-grow: 1;">今日任務尚未完成</div>
         <div style="text-align:center; font-size:11px; color:var(--p-red); margin-bottom:10px; font-weight:bold;">
-            LAST RECORDED: <span id="last-time">---</span>
-        </div>
+        LAST RECORDED: <span id="last-time">---</span>
+    </div>
     </div>
 
     <div id="tab-map" class="tab-content">
@@ -92,7 +95,7 @@
         </div>
     
         <div style="text-align:center; font-size:10px; color:#ccc; margin: 40px 0 20px 0; letter-spacing:1px;">
-            VER / UPDATED: 2026-07-18 (修正建議 B 4:6:10 版)
+            VER / UPDATED: 2026-04-26
         </div>
     </div>
 
@@ -127,30 +130,32 @@
         const startDate = new Date('2026-03-31'), deadline = new Date('2026-08-31');
 
         function initGame() {
-            initGrid();
-            const saved = localStorage.getItem('c100_state');
-            if(saved) {
-                const d = JSON.parse(saved);
-                totalExp = d.totalExp; baseCount = d.baseCount; 
-                mealTotal = d.mealTotal || 0; drinkTotal = d.drinkTotal || 0; bonusCount = d.bonusCount || 0;
-                const isNewDay = d.lastDate !== new Date().toDateString();
-                todayMarked = isNewDay ? false : (d.todayMarked || false);
-                hasBonusToday = isNewDay ? false : (d.hasBonusToday || false);
-                
-                if(d.saveTimestamp) {
-                    document.getElementById('last-time').innerText = d.saveTimestamp;
+                    initGrid();
+                    const saved = localStorage.getItem('c100_state');
+                    if(saved) {
+                        const d = JSON.parse(saved); // 確保 d 在這裡被定義
+                        totalExp = d.totalExp; baseCount = d.baseCount; 
+                        mealTotal = d.mealTotal || 0; drinkTotal = d.drinkTotal || 0; bonusCount = d.bonusCount || 0;
+                        const isNewDay = d.lastDate !== new Date().toDateString();
+                        todayMarked = isNewDay ? false : (d.todayMarked || false);
+                        hasBonusToday = isNewDay ? false : (d.hasBonusToday || false);
+                        
+                        // 顯示上次紀錄時間
+                        if(d.saveTimestamp) {
+                            document.getElementById('last-time').innerText = d.saveTimestamp;
+                        }
+        
+                        if(!isNewDay) {
+                            if(d.mealDone) document.getElementById('task-meal').classList.add('done');
+                            if(d.drinkDone) document.getElementById('task-drink').classList.add('done');
+                            if(hasBonusToday) document.getElementById('task-bonus').classList.add('collected');
+                        }
+                        if(d.cellClasses) d.cellClasses.forEach((cls, i) => { 
+                            if(document.getElementById('c'+(i+1))) document.getElementById('c'+(i+1)).className = cls; 
+                        });
+                    }
+                    updateUI();
                 }
-
-                if(!isNewDay) {
-                    if(d.mealDone) document.getElementById('task-meal').classList.add('done');
-                    if(d.drinkDone) document.getElementById('task-drink').classList.add('done');
-                }
-                if(d.cellClasses) d.cellClasses.forEach((cls, i) => { 
-                    if(document.getElementById('c'+(i+1))) document.getElementById('c'+(i+1)).className = cls; 
-                });
-            }
-            updateUI();
-        }
 
         function initGrid() {
             const grid = document.getElementById('map-grid'); grid.innerHTML = '';
@@ -170,91 +175,122 @@
                     if(!cell.classList.contains('filled') && !cell.classList.contains('gold-filled')) cell.classList.add('filled');
                 } else { cell.className = 'cell'; }
             }
-            
+            // Milestone 邏輯
             const mileArea = document.getElementById('milestone-area');
             mileArea.innerHTML = "";
             if (baseCount === 33) {
-                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-red);">MILESTONE 33</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>實質蛻變：</b><br>在這 33 次挑戰中，妳完成了 <span class="color-stat">${mealTotal} 次</span> 原型食物、<span class="color-stat">${drinkTotal} 次</span> 無糖飲品</p></div>`;
+                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-red);">MILESTONE 33</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>實質蛻變：</b><br>在這 33 次挑戰中，妳完成了 <span class="color-stat">${mealTotal} 次</span> 原型食物、<span class="color-stat">${drinkTotal} 次</span> 無糖飲品<br>以及 <span class="color-stat">${bonusCount} 次</span> 的運動！</p></div>`;
             } else if (baseCount === 66) {
                 const mRate = Math.round((mealTotal / 66) * 100);
                 const dRate = Math.round((drinkTotal / 66) * 100);
-                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-yellow); color:#000;">MILESTONE 66</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>鋼鐵紀律：</b><br>達成率：原型食物 <span class="color-stat">${mRate}%</span> / 無糖飲品 <span class="color-stat">${dRate}%</span></p></div>`;
+                mileArea.innerHTML = `<div class="milestone-report"><div class="milestone-tag" style="background:var(--p-yellow); color:#000;">MILESTONE 66</div><p style="margin:0; font-size:15px; line-height:1.8; color:#000;"><b>鋼鐵紀律：</b><br>達成率：原型食物 <span class="color-stat">${mRate}%</span> / 無糖飲品 <span class="color-stat">${dRate}%</span><br>額外運動 <span class="color-stat">${bonusCount} 次</span>！</p></div>`;
             }
             if(baseCount >= 100) document.getElementById('final-reveal-btn').style.display = 'block';
         }
 
         function saveData() {
-            const now = new Date();
-            const timeString = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            
-            const state = {
-                totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
-                mealDone: document.getElementById('task-meal').classList.contains('done'),
-                drinkDone: document.getElementById('task-drink').classList.contains('done'),
-                lastDate: new Date().toDateString(),
-                saveTimestamp: timeString,
-                cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
-            };
-            localStorage.setItem('c100_state', JSON.stringify(state));
-            
-            const timeEl = document.getElementById('last-time');
-            if(timeEl) timeEl.innerText = timeString;
-        }
+                    const now = new Date();
+                    // 格式化時間：月/日 時:分
+                    const timeString = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                    
+                    const state = {
+                        totalExp, baseCount, mealTotal, drinkTotal, bonusCount, todayMarked, hasBonusToday,
+                        mealDone: document.getElementById('task-meal').classList.contains('done'),
+                        drinkDone: document.getElementById('task-drink').classList.contains('done'),
+                        lastDate: new Date().toDateString(),
+                        saveTimestamp: timeString, // 儲存時間戳記
+                        cellClasses: Array.from(document.querySelectorAll('.cell')).map(c => c.className)
+                    };
+                    localStorage.setItem('c100_state', JSON.stringify(state));
+                    
+                    // 確保介面即時更新
+                    const timeEl = document.getElementById('last-time');
+                    if(timeEl) timeEl.innerText = timeString;
+                }
 
+
+        // 新增：JSON 導出
         async function exportJSON() {
-            const state = localStorage.getItem('c100_state');
-            if(state) {
-                const blindBoxCode = btoa(encodeURIComponent(state));
-                await navigator.clipboard.writeText(blindBoxCode);
-                alert("數據已封裝並複製！");
-            }
+        const state = localStorage.getItem('c100_state');
+        if(state) {
+            // 轉為 Base64 亂碼
+            const blindBoxCode = btoa(encodeURIComponent(state));
+            await navigator.clipboard.writeText(blindBoxCode);
+            alert("數據已封裝並複製！");
         }
+    }
 
+        // 新增：JSON 還原
         function importJSON() {
             try {
                 let content = document.getElementById('memoInput').value.trim();
+                
+                // 判斷是否為 Base64 加密格式（通常不含 { 符號）
                 if (!content.startsWith('{')) {
-                    try { content = decodeURIComponent(atob(content)); } catch (e) {
-                        try { content = atob(content); } catch (e2) { throw new Error("解碼失敗，請確保代碼完整"); }
+                    try {
+                        // 解碼 Base64，並處理中文字元
+                        content = decodeURIComponent(atob(content));
+                    } catch (e) {
+                        // 如果 atob 失敗，可能是單純的 Base64 沒經過 URI 編碼
+                        try {
+                            content = atob(content);
+                        } catch (e2) {
+                            throw new Error("解碼失敗，請確保代碼完整");
+                        }
                     }
                 }
+                
                 const d = JSON.parse(content);
                 if(d.baseCount !== undefined) {
+                    // 重新存入 localStorage
                     localStorage.setItem('c100_state', JSON.stringify(d));
                     alert("數據已成功歸位！頁面即將重整...");
                     location.reload();
-                } else { alert("數據格式有誤，找不到進度資料。"); }
-            } catch(e) { alert("匯入失敗：請確保貼上的代碼是完整的。"); console.error(e); }
+                } else { 
+                    alert("數據格式有誤，找不到進度資料。"); 
+                }
+            } catch(e) { 
+                alert("匯入失敗：請確保貼上的代碼是完整的。"); 
+                console.error(e);
+            }
         }
 
         function toggleRestoreZone() { const z = document.getElementById('restore-zone'); z.style.display = (z.style.display === 'block') ? 'none' : 'block'; }
 
+        // 修正後的方案 A/B
         function applyCorrection(type) {
             if(type === 'A') {
                 if(confirm("方案 A：確定要退回一格紀錄嗎？")) {
                     if(baseCount > 0) {
+                        // 1. 取得當前最後一格的狀態
                         const lastCell = document.getElementById('c' + baseCount);
-                        let expRefund = 10; 
                         
-                        // 修正：依據新制「食4 飲6 Bonus10」精準退分
-                        if(baseCount > 73) {
-                            const mealWasDone = document.getElementById('task-meal').classList.contains('done');
-                            const drinkWasDone = document.getElementById('task-drink').classList.contains('done');
-                            if(mealWasDone && drinkWasDone) expRefund = 20;
-                            else if(drinkWasDone) expRefund = 6;
-                            else if(mealWasDone) expRefund = 4;
-                        } else {
-                            if(lastCell.classList.contains('gold-filled') && bonusCount > 0) bonusCount--;
+                        // 2. 根據最後一格的顏色，判定要扣掉什麼次數
+                        // 如果是金色的，代表有 bonus
+                        if(lastCell.classList.contains('gold-filled')) {
+                            if(bonusCount > 0) bonusCount--;
                         }
                         
-                        if(document.getElementById('task-meal').classList.contains('done') && mealTotal > 0) mealTotal--;
-                        if(document.getElementById('task-drink').classList.contains('done') && drinkTotal > 0) drinkTotal--;
+                        // 3. 檢查當天任務勾選狀態，同步扣除細項次數
+                        // 注意：這裡假設 ERASE 是用來撤銷「最後一次」的操作
+                        if(document.getElementById('task-meal').classList.contains('done')) {
+                            if(mealTotal > 0) mealTotal--;
+                        }
+                        if(document.getElementById('task-drink').classList.contains('done')) {
+                            if(drinkTotal > 0) drinkTotal--;
+                        }
 
+                        // 4. 退回總進度與重設今日狀態
                         baseCount--;
+                        todayMarked = false; 
+                        hasBonusToday = false;
+                        
+                        // 5. 強制重整以套用新數據
                         const state = { 
-                            totalExp: Math.max(0, totalExp - expRefund),
+                            totalExp: totalExp - 10, // 假設退回一格至少扣 10 分
                             baseCount, mealTotal, drinkTotal, bonusCount, 
-                            todayMarked: false, hasBonusToday: false, lastDate: "" 
+                            todayMarked: false, hasBonusToday: false, 
+                            lastDate: "" // 清空日期讓今天可以重新紀錄
                         };
                         localStorage.setItem('c100_state', JSON.stringify(state));
                         location.reload(); 
@@ -265,82 +301,43 @@
             }
         }
 
-        // 精準改寫：完美重現 建議 B (食4 飲6 Bonus10) 生存綁架計分邏輯
-        function processTask(id) {
+        // 原有功能保留
+        function processTask(id, pts, isBase) {
             const el = document.getElementById(id);
-            if(el.classList.contains('done')) return;
-            
-            el.classList.add('done');
-            
-            const mealEl = document.getElementById('task-meal');
-            const drinkEl = document.getElementById('task-drink');
-            const isMealDone = mealEl.classList.contains('done');
-            const isDrinkDone = drinkEl.classList.contains('done');
-            
-            // 判斷是否為第 74 天起的新規則
-            const isNewRuleZone = (baseCount >= 73 || (baseCount === 72 && !todayMarked));
-            
-            if (!isNewRuleZone) {
-                // 舊制配分
-                totalExp += 10; 
-                if (id === 'task-meal') mealTotal++;
-                if (id === 'task-drink') drinkTotal++;
-            } else {
-                // 新制配分：精準對齊 4 / 6 / 10 綁架公式
-                if (id === 'task-meal') {
-                    mealTotal++;
-                    if (isDrinkDone) {
-                        // 本來無糖勾了(拿了6分)，現在補齊飲食(拿4分)，並解鎖無糖終極獎勵(+10分) = 補加 14 分
-                        totalExp += 14; 
-                        hasBonusToday = true;
-                    } else {
-                        // 孤零零只有控制飲食，只拿 4 分
-                        totalExp += 4;
-                    }
-                } else if (id === 'task-drink') {
-                    drinkTotal++;
-                    if (isMealDone) {
-                        // 本來飲食勾了(拿了4分)，現在補齊無糖(拿6分)，並解鎖無糖終極獎勵(+10分) = 補加 16 分
-                        totalExp += 16;
-                        hasBonusToday = true;
-                    } else {
-                        // 單純喝無糖，拿 6 分
-                        totalExp += 6;
-                    }
-                }
+            if(!el.classList.contains('done')) {
+                el.classList.add('done'); totalExp += pts;
+                if (id === 'task-meal') mealTotal++; if (id === 'task-drink') drinkTotal++;
+                if(isBase && !todayMarked && baseCount < 100) { baseCount++; todayMarked = true; }
+                saveData(); updateUI();
             }
-            
-            if(!todayMarked && baseCount < 100) { 
-                baseCount++; 
-                todayMarked = true; 
-            }
-            
-            if (isNewRuleZone && isMealDone && isDrinkDone) {
-                const cell = document.getElementById('c' + baseCount);
-                if (cell) cell.className = 'cell gold-filled';
-            }
-            
-            saveData(); 
-            updateUI();
         }
-
+        function processBonus(id, pts) {
+            const el = document.getElementById(id);
+            if(!el.classList.contains('collected')) {
+                el.classList.add('collected'); totalExp += pts; bonusCount++; hasBonusToday = true;
+                if(todayMarked) { const cell = document.getElementById('c' + baseCount); if(cell) cell.className = 'cell gold-filled'; }
+                saveData(); updateUI();
+            }
+        }
         function exportData() {
             const saved = localStorage.getItem('c100_state');
             if(saved) {
                 const d = JSON.parse(saved);
-                const percent = d.baseCount;
+                // 計算百分比
+                const percent = d.baseCount; // 因為總數是 100，所以 baseCount 就是 %
                 const bar = "█".repeat(Math.floor(percent / 5)) + "░".repeat(20 - Math.floor(percent / 5));
+                
                 const report = `=== 挑戰進度 ===\n[${bar}] ${percent}%\n最後更新：${d.lastDate}\n===============`;
+                
                 document.getElementById('backup-text').value = report;
                 document.getElementById('backup-overlay').style.display = 'flex';
             }
         }
-        
         function openCertificate() {
             const now = new Date();
             const mm = String(now.getMonth() + 1).padStart(2, '0'), dd = String(now.getDate()).padStart(2, '0');
             const diffDays = Math.ceil(Math.abs(now - startDate) / (1000 * 60 * 60 * 24));
-            const completionRate = Math.round(((baseCount) / 100) * 100);
+            const completionRate = Math.round(((baseCount + bonusCount) / 100) * 100);
             const baseCash = Math.round(totalExp * 1.6667);
             const bonus = (now <= deadline) ? 2000 : 0;
             document.getElementById('dynamic-text').innerHTML = `終於走到這裡了！<br>從 03/31 – <span class="color-date">${mm}/${dd}</span><br>在這 <span class="color-date">${diffDays}</span> 天裡，完成了 100 次挑戰！<br><br>克服了<b>無糖鮮奶茶</b>真的很不容易！<br><span class="color-ques">會想念有糖鮮奶茶的味道嗎？</span><br><br>妳完成度是：<span class="color-stat">${completionRate}%</span>。<br>總共得到 <span class="color-stat">${totalExp}</span> 積分。`;
