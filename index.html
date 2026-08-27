@@ -225,7 +225,7 @@
             const calculatedExp = (currentMeal * 20) + (currentDrink * 15) + (currentBonus * 5);
             const displayExp = Math.max(totalExp, calculatedExp);
 
-            const baseCash = Math.round(displayExp * 1.6667);
+            const baseCash = Math.round(displayExp * 2.5);
             const bonus = (now <= deadline) ? 2000 : 0;
 
             document.getElementById('dynamic-text').innerHTML = `
